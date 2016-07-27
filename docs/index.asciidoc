@@ -1,0 +1,5 @@
+= Burrowbeat Docs
+
+Welcome to the Burrowbeat documentation.
+
+
