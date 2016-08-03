@@ -127,7 +127,7 @@ From $GOPATH/src/github.com/goomzee/burrowbeat:
 
 5. Run nosetests (`-x` = stop on first failure, `-v` = verbose)
    ```
-   nosetests --with-timer -v -x test_stats.py
+   nosetests --with-timer -v -x test_consumer.py
    ```
 
 6. Deactivate python environment
