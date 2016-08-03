@@ -11,6 +11,7 @@ Ensure that this folder is at the following location:
 
 * [Golang](https://golang.org/dl/) 1.6.2
 
+
 ### Init Project
 To get running with Burrowbeat and also install the
 dependencies, run the following command:
@@ -29,6 +30,7 @@ git push origin master
 ```
 
 For further development, check out the [beat developer guide](https://www.elastic.co/guide/en/beats/libbeat/current/new-beat.html).
+
 
 ### Build
 
@@ -49,23 +51,90 @@ To run Burrowbeat with debugging output enabled, run:
 ```
 
 
+### Exported fields
+
+There are two types of documents exported:
+- `type: consumer_group` for consumer group partitions and lag
+- `type: topic` for topic name, size, partitions and lag
+
+Consumer group:
+
+<pre>
+{
+    "beat": {
+        "name": "burrowbeat",
+        "host": "localhost"
+    },
+    "@timestamp": "YYYY-MM-DD:MM:SS.milliZ",
+    "@version": "1",
+    "type": "consumer_group",
+    "count": 1,
+    "cluster": "cluster_name",
+    "group": "consumer_group_name",
+    "total_partitions": 2,
+    "total_lag": 0,
+    "burrow_status": {}
+}
+</pre>
+
+Topic:
+
+<pre>
+{
+    "beat": {
+        "name": "burrowbeat",
+        "host": "localhost"
+    },
+    "@timestamp": "YYYY-MM-DD:MM:SS.milliZ",
+    "@version": "1",
+    "type": "topic",
+    "count": 1,
+    "cluster": "cluster_name",
+    "group": "consumer_group_name",
+    "topic": {
+        "name": "test",
+        "size": 0,
+        "partitions": 2,
+        "lag": 0
+     }
+}
+</pre>
+
+
 ### Test
 
-To test Burrowbeat, run the following command:
+From $GOPATH/src/github.com/goomzee/burrowbeat:
 
-```
-make testsuite
-```
+1. Prepare and build python environment
+   ```
+   make python-env
+   ```
 
-alternatively:
-```
-make unit-tests
-make system-tests
-make integration-tests
-make coverage-report
-```
+2. Activate python test environment
+   ```
+   source build/python-env/bin/activate
+   ```
 
-The test coverage is reported in the folder `./build/coverage/`
+3. Build test-beat. Creates a `cassandrabeat.test` binary.
+   ```
+   make buildbeat.test
+   ```
+
+4. Go to tests/system
+   ```
+   cd tests/system
+   ```
+
+5. Run nosetests (`-x` = stop on first failure, `-v` = verbose)
+   ```
+   nosetests --with-timer -v -x test_stats.py
+   ```
+
+6. Deactivate python environment
+   ```
+   deactivate
+   ```
+
 
 ### Update
 
