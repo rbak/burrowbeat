@@ -7,3 +7,19 @@
       required: true
       description: >
         PLEASE UPDATE DOCUMENTATION
+    - name: cluster
+      type: string
+    - name: group
+      type: string
+    - name: topic
+      fields:
+        - name: name
+          type: string
+        - name: size
+          type: int
+    - name: partition_count
+      type: int
+    - name: lag
+      type: int
+    - name: burrow_status
+      type: map

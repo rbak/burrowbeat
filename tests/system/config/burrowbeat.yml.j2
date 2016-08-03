@@ -1,5 +1,20 @@
 ################### Beat Configuration #########################
 
+burrowbeat:
+  period: {{ period | default(0.1) }}
+  host: {{ host | default("bklise.goomzee.com") }}
+  port: {{ port | default("8000") }}
+  cluster: {{ cluster | default("local") }}
+
+    {% if groups | length > 0 %}
+  groups:
+    {% for item in groups -%}
+      - {{ item }}
+    {%- endfor %}
+    {% else %}
+  groups:
+    - "test_group"
+    {% endif %}
 
 
 ############################# Output ##########################################
@@ -14,7 +29,7 @@ output:
     enabled: true
 
     # Path to the directory where to save the generated files. The option is mandatory.
-    path: {{ output_file_path|default(beat.working_dir + "/output") }}
+    path: "{{ output_file_path|default(burrowbeat.working_dir + "/output") }}"
 
 
     # Name of the generated files. The default is `burrowbeat` and it generates
@@ -38,7 +53,7 @@ shipper:
   # The name of the shipper that publishes the network data. It can be used to group
   # all the transactions sent by a single shipper in the web interface.
   # If this options is not defined, the hostname is used.
-  #name:
+  name: "burrowbeat"
 
   # The tags of the shipper are included in their own field with each
   # transaction published. Tags make it easy to group servers by different

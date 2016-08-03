@@ -7,8 +7,16 @@ import "time"
 
 type Config struct {
 	Period time.Duration `config:"period"`
+	Host string `config:"host"`
+	Port string `config:"port"`
+	Cluster string `config:"cluster"` 
+	Groups []string `config:"groups"`
 }
 
 var DefaultConfig = Config{
-	Period: 1 * time.Second,
+	Period: 10 * time.Second,
+	Host: "bklise.goomzee.com",
+	Port: "8000",
+	Cluster: "local",
+	Groups: []string{"test_group"},
 }

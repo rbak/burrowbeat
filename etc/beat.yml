@@ -4,4 +4,9 @@
 
 burrowbeat:
   # Defines how often an event is sent to the output
-  period: 1s
+  period: 10s
+  host: "bklise.goomzee.com"
+  port: "8000"
+  cluster: "local"
+  groups:
+    - "test_group"

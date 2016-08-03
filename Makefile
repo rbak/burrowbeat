@@ -3,7 +3,10 @@ BEAT_DIR=github.com/goomzee
 SYSTEM_TESTS=false
 TEST_ENVIRONMENT=false
 ES_BEATS?=${GOPATH}/src/github.com/elastic/beats
-GOPACKAGES=$(shell glide novendor)
+# if using glide to manage vendor dependencies:
+#GOPACKAGES=$(shell glide novendor)
+# else:
+GOPACKAGES=$(shell go list ${BEAT_DIR}/... | grep -v /vendor/)
 PREFIX?=.
 
 # Path to the libbeat Makefile
