@@ -11,7 +11,6 @@ import (
 	"github.com/elastic/beats/libbeat/beat"
 	"github.com/elastic/beats/libbeat/common"
 	"github.com/elastic/beats/libbeat/logp"
-	"github.com/elastic/beats/libbeat/publisher"
 
 	"github.com/goomzee/burrowbeat/config"
 )
@@ -19,7 +18,7 @@ import (
 type Burrowbeat struct {
 	done       chan struct{}
 	config     config.Config
-	client     publisher.Client
+	client     beat.Client
 
 	host	   string
 	port       string
@@ -44,7 +43,12 @@ func New(b *beat.Beat, cfg *common.Config) (beat.Beater, error) {
 func (bt *Burrowbeat) Run(b *beat.Beat) error {
 	logp.Info("burrowbeat is running! Hit CTRL-C to stop it.")
 
-	bt.client = b.Publisher.Connect()
+ 	var err error
+ 	bt.client, err = b.Publisher.Connect()
+ 	if err != nil {
+ 		return err
+ 	}
+
 	bt.host = bt.config.Host
 	bt.port = bt.config.Port
 	bt.cluster = bt.config.Cluster
@@ -58,7 +62,7 @@ func (bt *Burrowbeat) Run(b *beat.Beat) error {
 		}
 
 		for _, group := range bt.groups {
-			endpoint := "http://" + bt.host + ":" + bt.port + "/v2/kafka/" + bt.cluster + "/consumer/" + group + "/lag"
+			endpoint := "http://" + bt.host + ":" + bt.port + "/v3/kafka/" + bt.cluster + "/consumer/" + group + "/lag"
 			resp, err := http.Get(endpoint)
 			if err != nil {
 				fmt.Errorf("Error during http GET: %v", err)
@@ -89,17 +93,20 @@ func (bt *Burrowbeat) getConsumerGroupStatus(burrow map[string]interface{}) {
 	total_partitions := int(status["partition_count"].(float64))
         total_lag := int(status["totallag"].(float64))
 
-	event := common.MapStr {
-		"@timestamp":		common.Time(time.Now()),
-		"type":			"consumer_group",
-		"count":		1,
-		"cluster":		bt.cluster,
-		"group":		group,
-		"total_partitions":	total_partitions,
-		"total_lag":		total_lag,
-		"burrow_status":	status,
+	event := beat.Event{
+		Timestamp: time.Now(),
+		Fields: common.MapStr{
+			"type":  "consumer_group",
+			"count":  1,
+			"cluster":  bt.cluster,
+			"group":  group,
+			"total_partitions":  total_partitions,
+			"total_lag":  total_lag,
+			"burrow_status":  status,
+		},
 	}
-	bt.client.PublishEvent(event)
+
+	bt.client.Publish(event)
 	logp.Info("Consumer group event sent")
 }
 
@@ -147,15 +154,18 @@ func (bt *Burrowbeat) getTopicStatuses(burrow map[string]interface{}) {
 			"lag":		topic_lags[i],
 		}
 
-		event := common.MapStr {
-			"@timestamp":	common.Time(time.Now()),
-			"type":		"topic",
-			"count":	1,
-			"cluster":	bt.cluster,
-			"group":	group,
-			"topic":	topic,
+		event := beat.Event{
+			Timestamp: time.Now(),
+			Fields: common.MapStr{
+				"type": "topic",
+				"count": 1,
+				"cluster": bt.cluster,
+				"group": group,
+				"topic": topic,
+			},
 		}
-		bt.client.PublishEvent(event)
+
+		bt.client.Publish(event)
 		logp.Info("Topic event sent")
 	}
 }
